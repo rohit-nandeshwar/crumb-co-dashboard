@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>AI-Driven Budget Forecasting Dashboard: Crumb &amp; Co.</title>
+<style>
+:root{--bg:#F6F7FA;--card:#FFFFFF;--ink:#1B2A49;--muted:#5A6478;--line:#D9DEE8;--gold:#C9A24B;--gold-ink:#7A5A10;--trad:#9B2C2C;--ai:#B8892B;--hist:#1B2A49;--act:#1B2A49;--snaive:#2F5D8A;--good:#1F7A4D;--bad:#9B2C2C;--tint:#FBF3DC;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);color-scheme:light}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--bg:#0F1524;--card:#18203A;--ink:#E8ECF6;--muted:#9AA6C0;--line:#2C3658;--gold:#D9B35C;--gold-ink:#E8C97A;--trad:#E57373;--ai:#E0B84D;--hist:#AEBBDD;--act:#E8ECF6;--snaive:#7FB0E0;--good:#5BCB92;--bad:#E57373;--tint:#2A2A1F;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0F1524;--card:#18203A;--ink:#E8ECF6;--muted:#9AA6C0;--line:#2C3658;--gold:#D9B35C;--gold-ink:#E8C97A;--trad:#E57373;--ai:#E0B84D;--hist:#AEBBDD;--act:#E8ECF6;--snaive:#7FB0E0;--good:#5BCB92;--bad:#E57373;--tint:#2A2A1F;color-scheme:dark}
+html{height:100%;scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:Georgia,"Times New Roman",serif;line-height:1.45}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);background:var(--bg);z-index:10}
+.wrap{max-width:1180px;margin:0 auto;padding:18px 16px 40px}
+header{display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end;justify-content:space-between;border-bottom:2px solid var(--gold);padding-bottom:10px;margin-bottom:14px}
+h1{font-size:1.5rem;margin:0}
+.sub{color:var(--muted);font-size:.92rem;margin-top:2px}
+.badge{display:inline-block;background:var(--tint);color:var(--gold-ink);border:1px solid var(--gold);border-radius:999px;padding:2px 10px;font-size:.78rem;margin-left:6px;white-space:nowrap}
+button,select,input{font:inherit}
+.btn{background:var(--card);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:6px 12px;cursor:pointer}
+.btn:hover{border-color:var(--gold)}
+.grid{display:grid;gap:12px}
+.kpis{grid-template-columns:repeat(auto-fit,minmax(150px,1fr));margin-bottom:12px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px}
+.kpi .l{color:var(--muted);font-size:.78rem;text-transform:uppercase;letter-spacing:.04em}
+.kpi .v{font-size:1.45rem;font-weight:700;margin-top:2px}
+.kpi .d{font-size:.8rem;margin-top:2px;color:var(--muted)}
+.up{color:var(--good)}.down{color:var(--bad)}
+.controls{grid-template-columns:repeat(auto-fit,minmax(230px,1fr));margin-bottom:12px}
+.controls label{display:block;font-size:.85rem;color:var(--muted);margin-bottom:4px}
+.controls .val{color:var(--ink);font-weight:700}
+input[type=range]{width:100%;accent-color:var(--gold)}
+.seg{display:flex;gap:6px;flex-wrap:wrap}
+.seg button{flex:1;min-width:84px}
+.seg .on{background:var(--ink);color:var(--card);border-color:var(--ink)}
+.tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+.tabs button{border-radius:999px;padding:6px 14px}
+.tabs .on{background:var(--gold);color:#1B2A49;border-color:var(--gold);font-weight:700}
+.panel{display:none}.panel.on{display:block}
+.chartbox{position:relative}
+svg text{font-family:Georgia,"Times New Roman",serif}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:.8rem;color:var(--muted);margin:6px 0 2px}
+.legend span i{display:inline-block;width:18px;height:3px;margin-right:6px;vertical-align:middle;border-radius:2px}
+.tip{position:absolute;pointer-events:none;background:var(--card);border:1px solid var(--line);border-radius:8px;padding:6px 9px;font-size:.78rem;box-shadow:0 4px 14px rgba(0,0,0,.18);min-width:150px;display:none;z-index:5}
+.tip b{display:block;margin-bottom:2px}
+.tbl{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:.84rem}
+th{background:var(--ink);color:var(--card);padding:6px 8px;text-align:right;white-space:nowrap}
+th:first-child,td:first-child{text-align:left}
+td{padding:5px 8px;border-bottom:1px solid var(--line);text-align:right}
+tr.tot td{font-weight:700;background:var(--tint)}
+.two{grid-template-columns:2fr 1fr}
+@media (max-width:820px){.two{grid-template-columns:1fr}}
+.note{font-size:.82rem;color:var(--muted)}
+.hl{background:var(--tint);border-left:4px solid var(--gold);padding:8px 12px;border-radius:6px;font-size:.88rem}
+ul{margin:6px 0 0 18px;padding:0}
+footer{margin-top:18px;color:var(--muted);font-size:.78rem}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+ <div>
+  <h1>AI-Driven Budget Forecasting: Crumb &amp; Co.<span class="badge">Simulated data</span><span class="badge">Rs &rsquo;000</span></h1>
+  <div class="sub">Managerial Accounting WAI &middot; Rohit Nandeshwar, M58E-26, Section E &middot; IIM Ranchi &middot; hypothetical bakery-caf&eacute;, Ranchi</div>
+ </div>
+ <button class="btn" id="theme" aria-label="Toggle light and dark theme">Toggle theme</button>
+</header>
+
+<section class="grid kpis" id="kpis"></section>
+
+<section class="grid controls card">
+ <div><label>Forecast method (KPIs and table)</label><div class="seg" id="method"><button data-m="ai" class="btn on">AI forecast</button><button data-m="trad" class="btn">Traditional</button></div></div>
+ <div><label>Sales scenario: <span class="val" id="vAdj">0%</span> vs model forecast</label><input type="range" id="adj" min="-20" max="20" step="1" value="0"></div>
+ <div><label>Fixed-cost growth next year: <span class="val" id="vFix">5.0%</span></label><input type="range" id="fix" min="0" max="15" step="0.5" value="5"></div>
+ <div><label>Variable-cost shift: <span class="val" id="vVar">0.0 pp</span> of sales</label><input type="range" id="vc" min="-3" max="3" step="0.5" value="0"></div>
+</section>
+
+<nav class="tabs" id="tabs">
+ <button class="btn on" data-t="forecast">Forecast</button>
+ <button class="btn" data-t="backtest">Back-test: predicted vs actual</button>
+ <button class="btn" data-t="monthly">Monthly budget table</button>
+ <button class="btn" data-t="method">Method and caveats</button>
+</nav>
+
+<section class="panel on" id="p-forecast">
+ <div class="card">
+  <div class="legend" id="lg1"></div>
+  <div class="chartbox" id="c1"><div class="tip" id="t1"></div></div>
+  <div class="note">History: 36 simulated months (Nov 2023&ndash;Oct 2026). Forecast: next 12 months. The shaded band is an indicative 80% range based on the back-test error. Scenario sliders move the forecast lines.</div>
+ </div>
+</section>
+
+<section class="panel" id="p-backtest">
+ <div class="grid two">
+  <div class="card">
+   <div class="legend" id="lg2"></div>
+   <div class="chartbox" id="c2"><div class="tip" id="t2"></div></div>
+   <div class="note">Models were fitted on Nov 2023&ndash;Oct 2025 only and asked to predict the next 12 months, which were held back as &ldquo;actual&rdquo; months.</div>
+  </div>
+  <div class="card tbl">
+   <table id="acc"></table>
+   <p class="note">MAE = mean absolute error; MAPE = mean absolute percentage error; bias = forecast minus actual (negative = under-forecast).</p>
+   <div class="hl" id="verdict"></div>
+  </div>
+ </div>
+</section>
+
+<section class="panel" id="p-monthly">
+ <div class="card tbl"><table id="mt"></table>
+ <p class="note" id="mnote"></p></div>
+</section>
+
+<section class="panel" id="p-method">
+ <div class="card">
+  <ul>
+   <li><b>Business.</b> Crumb &amp; Co.: hypothetical neighbourhood bakery-caf&eacute;; variable costs about 42% of sales (materials 28%, labour 8%, overhead 6%); fixed costs Rs 170k, 175k and 180k a month over three years.</li>
+   <li><b>Data.</b> 36 simulated months (seed 2026): base Rs 420k growing 0.9% a month, seasonal index 0.90&ndash;1.22, 3.5% noise. Not records of a real business.</li>
+   <li><b>Traditional.</b> Least-squares trend on sales; variable costs at the historical ratio; fixed costs by assumption; CVP break-even = fixed costs &divide; contribution margin ratio.</li>
+   <li><b>AI predictive.</b> Holt-Winters exponential smoothing (damped additive trend, multiplicative 12-month seasonality) for sales; cost-behaviour regression of variable cost on sales for expenses.</li>
+   <li><b>Scenarios.</b> The sliders apply a percentage change to the model sales forecast, change next year&rsquo;s fixed-cost growth, and shift the variable-cost ratio in percentage points. They are what-if tools, not new forecasts.</li>
+   <li><b>Caveats.</b> Simulated data with designed seasonality; one back-test window; the seasonal-naive reference (last year&rsquo;s month times last year&rsquo;s growth) was more accurate than both methods in the back-test.</li>
+  </ul>
+ </div>
+</section>
+<footer>Dashboard accompanies the Managerial Accounting WAI report. All figures are computed in the page from the embedded dataset.</footer>
+</div>
+<script>
+const D={"history":[{"month":"2023-11","sales":465.3,"materials":128.6,"labour":40.4,"overhead":28.6,"variable":197.6,"fixed":170.0,"profit":97.7},{"month":"2023-12","sales":520.9,"materials":144.2,"labour":40.8,"overhead":33.0,"variable":218.0,"fixed":170.0,"profit":132.9},{"month":"2024-01","sales":399.8,"materials":113.4,"labour":33.3,"overhead":23.0,"variable":169.7,"fixed":170.0,"profit":60.1},{"month":"2024-02","sales":439.1,"materials":125.6,"labour":35.7,"overhead":23.3,"variable":184.6,"fixed":170.0,"profit":84.5},{"month":"2024-03","sales":422.5,"materials":118.9,"labour":33.6,"overhead":25.5,"variable":178.0,"fixed":170.0,"profit":74.5},{"month":"2024-04","sales":404.0,"materials":111.3,"labour":31.5,"overhead":23.5,"variable":166.3,"fixed":170.0,"profit":67.7},{"month":"2024-05","sales":403.0,"materials":110.5,"labour":33.8,"overhead":24.1,"variable":168.4,"fixed":170.0,"profit":64.6},{"month":"2024-06","sales":406.4,"materials":117.9,"labour":32.3,"overhead":26.4,"variable":176.6,"fixed":170.0,"profit":59.8},{"month":"2024-07","sales":410.9,"materials":116.8,"labour":34.8,"overhead":23.3,"variable":174.9,"fixed":170.0,"profit":66.0},{"month":"2024-08","sales":433.3,"materials":123.5,"labour":33.7,"overhead":27.0,"variable":184.2,"fixed":170.0,"profit":79.1},{"month":"2024-09","sales":470.7,"materials":139.0,"labour":37.7,"overhead":29.6,"variable":206.3,"fixed":170.0,"profit":94.4},{"month":"2024-10","sales":518.7,"materials":142.3,"labour":42.2,"overhead":31.8,"variable":216.3,"fixed":170.0,"profit":132.4},{"month":"2024-11","sales":531.5,"materials":158.3,"labour":43.1,"overhead":33.7,"variable":235.1,"fixed":175.0,"profit":121.4},{"month":"2024-12","sales":573.5,"materials":173.2,"labour":43.8,"overhead":33.6,"variable":250.6,"fixed":175.0,"profit":147.9},{"month":"2025-01","sales":478.4,"materials":139.4,"labour":37.3,"overhead":27.7,"variable":204.4,"fixed":175.0,"profit":99.0},{"month":"2025-02","sales":455.7,"materials":130.2,"labour":36.2,"overhead":28.8,"variable":195.2,"fixed":175.0,"profit":85.5},{"month":"2025-03","sales":453.7,"materials":124.9,"labour":35.1,"overhead":28.2,"variable":188.2,"fixed":175.0,"profit":90.5},{"month":"2025-04","sales":463.3,"materials":132.9,"labour":38.0,"overhead":29.7,"variable":200.6,"fixed":175.0,"profit":87.7},{"month":"2025-05","sales":451.6,"materials":125.0,"labour":36.9,"overhead":27.4,"variable":189.3,"fixed":175.0,"profit":87.3},{"month":"2025-06","sales":426.7,"materials":119.4,"labour":31.6,"overhead":27.7,"variable":178.7,"fixed":175.0,"profit":73.0},{"month":"2025-07","sales":454.2,"materials":126.3,"labour":33.9,"overhead":26.9,"variable":187.1,"fixed":175.0,"profit":92.1},{"month":"2025-08","sales":497.6,"materials":140.3,"labour":37.9,"overhead":28.3,"variable":206.5,"fixed":175.0,"profit":116.1},{"month":"2025-09","sales":506.9,"materials":146.5,"labour":40.7,"overhead":27.3,"variable":214.5,"fixed":175.0,"profit":117.4},{"month":"2025-10","sales":564.3,"materials":155.8,"labour":48.6,"overhead":32.0,"variable":236.4,"fixed":175.0,"profit":152.9},{"month":"2025-11","sales":606.6,"materials":165.7,"labour":47.8,"overhead":37.9,"variable":251.4,"fixed":180.0,"profit":175.2},{"month":"2025-12","sales":682.7,"materials":186.4,"labour":55.1,"overhead":38.0,"variable":279.5,"fixed":180.0,"profit":223.2},{"month":"2026-01","sales":516.7,"materials":141.2,"labour":39.7,"overhead":30.3,"variable":211.2,"fixed":180.0,"profit":125.5},{"month":"2026-02","sales":543.5,"materials":146.7,"labour":41.8,"overhead":36.0,"variable":224.5,"fixed":180.0,"profit":139.0},{"month":"2026-03","sales":490.8,"materials":134.3,"labour":36.4,"overhead":30.7,"variable":201.4,"fixed":180.0,"profit":109.4},{"month":"2026-04","sales":509.2,"materials":147.2,"labour":40.7,"overhead":33.3,"variable":221.2,"fixed":180.0,"profit":108.0},{"month":"2026-05","sales":484.9,"materials":133.8,"labour":40.2,"overhead":27.7,"variable":201.7,"fixed":180.0,"profit":103.2},{"month":"2026-06","sales":522.8,"materials":147.3,"labour":41.3,"overhead":27.5,"variable":216.1,"fixed":180.0,"profit":126.7},{"month":"2026-07","sales":529.5,"materials":143.7,"labour":44.6,"overhead":34.2,"variable":222.5,"fixed":180.0,"profit":127.0},{"month":"2026-08","sales":563.5,"materials":158.4,"labour":45.4,"overhead":31.4,"variable":235.2,"fixed":180.0,"profit":148.3},{"month":"2026-09","sales":551.7,"materials":147.8,"labour":44.1,"overhead":33.3,"variable":225.2,"fixed":180.0,"profit":146.5},{"month":"2026-10","sales":647.0,"materials":178.0,"labour":52.8,"overhead":39.2,"variable":270.0,"fixed":180.0,"profit":197.0}],"forecast":[{"month":"2026-11","t_sales":570.83,"a_sales":661.18,"a_lo":616.52,"a_hi":705.83},{"month":"2026-12","t_sales":574.96,"a_sales":731.02,"a_lo":686.36,"a_hi":775.67},{"month":"2027-01","t_sales":579.09,"a_sales":571.79,"a_lo":527.14,"a_hi":616.45},{"month":"2027-02","t_sales":583.22,"a_sales":587.2,"a_lo":542.54,"a_hi":631.85},{"month":"2027-03","t_sales":587.35,"a_sales":555.23,"a_lo":510.57,"a_hi":599.88},{"month":"2027-04","t_sales":591.47,"a_sales":559.4,"a_lo":514.75,"a_hi":604.06},{"month":"2027-05","t_sales":595.6,"a_sales":542.09,"a_lo":497.43,"a_hi":586.74},{"month":"2027-06","t_sales":599.73,"a_sales":548.87,"a_lo":504.21,"a_hi":593.52},{"month":"2027-07","t_sales":603.86,"a_sales":563.16,"a_lo":518.5,"a_hi":607.81},{"month":"2027-08","t_sales":607.98,"a_sales":602.19,"a_lo":557.54,"a_hi":646.85},{"month":"2027-09","t_sales":612.11,"a_sales":612.6,"a_lo":567.95,"a_hi":657.26},{"month":"2027-10","t_sales":616.24,"a_sales":693.0,"a_lo":648.34,"a_hi":737.65}],"backtest":[{"month":"2025-11","actual":606.6,"trad":501.2,"ai":574.2,"snaive":588.0},{"month":"2025-12","actual":682.7,"trad":504.2,"ai":627.5,"snaive":634.5},{"month":"2026-01","actual":516.7,"trad":507.1,"ai":503.0,"snaive":529.3},{"month":"2026-02","actual":543.5,"trad":510.0,"ai":508.8,"snaive":504.1},{"month":"2026-03","actual":490.8,"trad":512.9,"ai":497.1,"snaive":501.9},{"month":"2026-04","actual":509.2,"trad":515.9,"ai":491.3,"snaive":512.5},{"month":"2026-05","actual":484.9,"trad":518.8,"ai":482.4,"snaive":499.6},{"month":"2026-06","actual":522.8,"trad":521.7,"ai":468.1,"snaive":472.1},{"month":"2026-07","actual":529.5,"trad":524.6,"ai":485.3,"snaive":502.5},{"month":"2026-08","actual":563.5,"trad":527.6,"ai":521.2,"snaive":550.5},{"month":"2026-09","actual":551.7,"trad":530.5,"ai":545.1,"snaive":560.8},{"month":"2026-10","actual":647.0,"trad":533.4,"ai":602.5,"snaive":624.3}],"trend":{"ratio":0.42061918217618205},"costfn":[8.333828111139715,0.40376510109033625],"metrics":{"trad":{"MAE":47.19605072463768,"MAPE":7.770951977978922,"RMSE":71.0280200367821,"Bias":-36.74659420289857,"pMAPE":18.4299785681122},"ai":{"MAE":29.576006463380406,"MAPE":5.179435001936034,"RMSE":34.88726043853236,"Bias":-28.527707956282796,"pMAPE":14.872624017350363},"sn":{"MAE":22.541749140633843,"MAPE":4.002934416779244,"RMSE":27.08582901151751,"Bias":-14.073004885480804,"pMAPE":9.890023971621037}}};
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+const f1=x=>Number(x).toLocaleString("en-US",{minimumFractionDigits:1,maximumFractionDigits:1});
+const pc=x=>(x*100).toFixed(1)+"%";
+const mon=p=>{const [y,m]=p.split("-");return ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"][+m-1]+" "+y.slice(2)};
+const css=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+let state={method:"ai",adj:0,fix:5,vc:0,tab:"forecast"};
+const H=D.history, F=D.forecast, BT=D.backtest;
+const last12=H.slice(24);
+const L12={sales:last12.reduce((a,x)=>a+x.sales,0),var:last12.reduce((a,x)=>a+x.variable,0),fixed:last12.reduce((a,x)=>a+x.fixed,0),profit:last12.reduce((a,x)=>a+x.profit,0)};
+function scen(){
+  const k=1+state.adj/100, fx=180*(1+state.fix/100), sh=state.vc/100;
+  return F.map(x=>{
+    const ts=x.t_sales*k, as=x.a_sales*k;
+    const tv=ts*(D.trend.ratio+sh), av=D.costfn[0]+D.costfn[1]*as+as*sh;
+    return {m:x.month,ts,tv,tp:ts-tv-fx,as,av,ap:as-av-fx,lo:x.a_lo*k,hi:x.a_hi*k,fx};
+  });
+}
+function kpis(){
+  const S=scen(), m=state.method, sum=(k)=>S.reduce((a,x)=>a+x[k],0);
+  const sales=sum(m==="ai"?"as":"ts"), vc=sum(m==="ai"?"av":"tv"), fx=sum("fx"), pr=sales-vc-fx;
+  const cm=1-vc/sales, be=(fx/12)/cm, mos=1-be/(sales/12);
+  const g=(a,b)=>{const d=a/b-1;return `<span class="${d>=0?"up":"down"}">${d>=0?"+":""}${(d*100).toFixed(1)}%</span> vs latest 12 months`};
+  const cards=[["Forecast sales",f1(sales),g(sales,L12.sales)],["Variable costs",f1(vc),g(vc,L12.var)],["Fixed costs",f1(fx),g(fx,L12.fixed)],["Operating profit",f1(pr),g(pr,L12.profit)],["Break-even sales / month",f1(be),"contribution margin "+pc(cm)],["Margin of safety",pc(mos),"forecast sales vs break-even"]];
+  $("#kpis").innerHTML=cards.map(c=>`<div class="card kpi"><div class="l">${c[0]}</div><div class="v">${c[1]}</div><div class="d">${c[2]}</div></div>`).join("");
+}
+// ---- SVG line chart ----
+function chart(host,tipEl,cats,series,opt){
+  const W=900,Ht=opt.h||340,m={l:56,r:16,t:12,b:34};
+  let all=[];series.forEach(s=>s.values.forEach(v=>{if(v!=null)all.push(v)}));(opt.band?[opt.band.lo,opt.band.hi]:[]).forEach(a=>a.forEach(v=>all.push(v)));
+  let mn=Math.floor(Math.min(...all)/50)*50, mx=Math.ceil(Math.max(...all)/50)*50;
+  const X=i=>m.l+(W-m.l-m.r)*i/(cats.length-1), Y=v=>Ht-m.b-(Ht-m.t-m.b)*(v-mn)/(mx-mn);
+  let g=`<svg viewBox="0 0 ${W} ${Ht}" width="100%" role="img" aria-label="${opt.label}">`;
+  for(let v=mn;v<=mx;v+=50){g+=`<line x1="${m.l}" x2="${W-m.r}" y1="${Y(v)}" y2="${Y(v)}" stroke="${css("--line")}" stroke-width="1"/><text x="${m.l-6}" y="${Y(v)+3}" text-anchor="end" font-size="10" fill="${css("--muted")}">${v}</text>`}
+  const step=Math.ceil(cats.length/9);
+  cats.forEach((c,i)=>{if(i%step===0||i===cats.length-1)g+=`<text x="${X(i)}" y="${Ht-12}" text-anchor="middle" font-size="10" fill="${css("--muted")}">${mon(c)}</text>`});
+  if(opt.split!=null)g+=`<line x1="${X(opt.split)}" x2="${X(opt.split)}" y1="${m.t}" y2="${Ht-m.b}" stroke="${css("--muted")}" stroke-dasharray="3 3"/>`;
+  if(opt.band){const a=opt.band; let p="";a.idx.forEach((ix,k)=>p+=(k?"L":"M")+X(ix)+","+Y(a.hi[k]));for(let k=a.idx.length-1;k>=0;k--)p+="L"+X(a.idx[k])+","+Y(a.lo[k]);g+=`<path d="${p}Z" fill="${css("--gold")}" opacity=".28"/>`}
+  series.forEach(s=>{let p="",pen=false;s.values.forEach((v,i)=>{if(v==null){pen=false;return}p+=(pen?"L":"M")+X(i)+","+Y(v);pen=true});g+=`<path d="${p}" fill="none" stroke="${s.color}" stroke-width="${s.w||2.2}" ${s.dash?`stroke-dasharray="${s.dash}"`:""} stroke-linejoin="round" stroke-linecap="round"/>`});
+  g+=`<line id="cur" x1="0" x2="0" y1="${m.t}" y2="${Ht-m.b}" stroke="${css("--ink")}" stroke-width="1" opacity="0"/><rect x="${m.l}" y="${m.t}" width="${W-m.l-m.r}" height="${Ht-m.t-m.b}" fill="transparent" id="hit"/></svg>`;
+  host.querySelectorAll("svg").forEach(e=>e.remove()); host.insertAdjacentHTML("afterbegin",g);
+  const svg=host.querySelector("svg"),hit=svg.querySelector("#hit"),cur=svg.querySelector("#cur");
+  const mv=e=>{const r=svg.getBoundingClientRect(),px=(e.clientX-r.left)/r.width*W;let i=Math.round((px-m.l)/(W-m.l-m.r)*(cats.length-1));i=Math.max(0,Math.min(cats.length-1,i));
+    cur.setAttribute("x1",X(i));cur.setAttribute("x2",X(i));cur.setAttribute("opacity",.5);
+    tipEl.innerHTML=`<b>${mon(cats[i])}</b>`+series.filter(s=>s.values[i]!=null).map(s=>`<div><span style="color:${s.color}">&#9632;</span> ${s.name}: ${f1(s.values[i])}</div>`).join("");
+    tipEl.style.display="block";const bx=host.getBoundingClientRect();let lx=(e.clientX-bx.left)+14;if(lx>bx.width-170)lx=bx.width-170;tipEl.style.left=Math.max(4,lx)+"px";tipEl.style.top="10px"};
+  hit.addEventListener("mousemove",mv);hit.addEventListener("touchmove",e=>mv(e.touches[0]),{passive:true});hit.addEventListener("mouseleave",()=>{tipEl.style.display="none";cur.setAttribute("opacity",0)});
+}
+function legend(el,items){el.innerHTML=items.map(i=>`<span><i style="background:${i[1]}"></i>${i[0]}</span>`).join("")}
+function drawForecast(){
+  const S=scen(), cats=H.map(x=>x.month).concat(S.map(x=>x.m)), n=H.length;
+  const pad=(a)=>Array(n).fill(null).concat(a);
+  const hv=H.map(x=>x.sales).concat(Array(12).fill(null));
+  // connect forecast lines to last history point
+  const lastH=H[n-1].sales; const tv=pad(S.map(x=>x.ts)), av=pad(S.map(x=>x.as)); tv[n-1]=lastH; av[n-1]=lastH;
+  const series=[{name:"History (simulated)",color:css("--hist"),values:hv,w:2.4},{name:"Traditional trend",color:css("--trad"),values:tv,dash:"6 4"},{name:"AI forecast (Holt-Winters)",color:css("--ai"),values:av,w:2.6}];
+  chart($("#c1"),$("#t1"),cats,series,{split:n-0.5,band:{idx:S.map((_,i)=>n+i),lo:S.map(x=>x.lo),hi:S.map(x=>x.hi)},label:"History and forecast of monthly sales"});
+  legend($("#lg1"),[["History (simulated)",css("--hist")],["Traditional trend",css("--trad")],["AI forecast (Holt-Winters)",css("--ai")],["AI 80% range",css("--gold")]]);
+}
+function drawBack(){
+  const cats=BT.map(x=>x.month);
+  const series=[{name:"Actual (simulated)",color:css("--act"),values:BT.map(x=>x.actual),w:2.8},{name:"Traditional trend",color:css("--trad"),values:BT.map(x=>x.trad),dash:"6 4"},{name:"AI forecast",color:css("--ai"),values:BT.map(x=>x.ai),w:2.4},{name:"Seasonal naive (reference)",color:css("--snaive"),values:BT.map(x=>x.snaive),dash:"2 3",w:1.8}];
+  chart($("#c2"),$("#t2"),cats,series,{label:"Back-test: predicted versus actual monthly sales",h:330});
+  legend($("#lg2"),series.map(s=>[s.name,s.color]));
+  const b=D.metrics, rows=[["Sales MAE",b.trad.MAE,b.ai.MAE,b.sn.MAE,f1],["Sales MAPE",b.trad.MAPE/100,b.ai.MAPE/100,b.sn.MAPE/100,pc],["Sales RMSE",b.trad.RMSE,b.ai.RMSE,b.sn.RMSE,f1],["Sales bias",b.trad.Bias,b.ai.Bias,b.sn.Bias,f1],["Profit MAPE",b.trad.pMAPE/100,b.ai.pMAPE/100,b.sn.pMAPE/100,pc]];
+  $("#acc").innerHTML="<tr><th>Metric</th><th>Traditional</th><th>AI</th><th>Seasonal naive</th></tr>"+rows.map(r=>`<tr><td>${r[0]}</td><td>${r[4](r[1])}</td><td>${r[4](r[2])}</td><td>${r[4](r[3])}</td></tr>`).join("");
+  $("#verdict").innerHTML=`The AI model cut sales MAPE from <b>${b.trad.MAPE.toFixed(1)}%</b> to <b>${b.ai.MAPE.toFixed(1)}%</b>, but the simple seasonal-naive reference did better (<b>${b.sn.MAPE.toFixed(1)}%</b>). All three under-forecast because growth continued. One 12-month test on simulated data is thin evidence.`;
+}
+function drawTable(){
+  const S=scen(),m=state.method,k=m==="ai"?["as","av"]:["ts","tv"];
+  let tot={s:0,v:0,f:0,p:0};
+  const rows=S.map(x=>{const s=x[k[0]],v=x[k[1]],p=s-v-x.fx;tot.s+=s;tot.v+=v;tot.f+=x.fx;tot.p+=p;return `<tr><td>${mon(x.m)}</td><td>${f1(s)}</td><td>${f1(v)}</td><td>${f1(x.fx)}</td><td>${f1(p)}</td><td>${pc(p/s)}</td></tr>`}).join("");
+  $("#mt").innerHTML="<tr><th>Month</th><th>Sales</th><th>Variable cost</th><th>Fixed cost</th><th>Operating profit</th><th>Profit margin</th></tr>"+rows+`<tr class="tot"><td>Total</td><td>${f1(tot.s)}</td><td>${f1(tot.v)}</td><td>${f1(tot.f)}</td><td>${f1(tot.p)}</td><td>${pc(tot.p/tot.s)}</td></tr>`;
+  $("#mnote").textContent=(m==="ai"?"AI forecast":"Traditional budget")+" with scenario settings applied: sales "+(state.adj>=0?"+":"")+state.adj+"%, fixed-cost growth "+state.fix.toFixed(1)+"%, variable-cost shift "+(state.vc>=0?"+":"")+state.vc.toFixed(1)+" pp. Rs \u2019000.";
+}
+function render(){kpis();drawTable();if(state.tab==="forecast")drawForecast();if(state.tab==="backtest")drawBack();}
+$("#adj").oninput=e=>{state.adj=+e.target.value;$("#vAdj").textContent=(state.adj>=0?"+":"")+state.adj+"%";render()};
+$("#fix").oninput=e=>{state.fix=+e.target.value;$("#vFix").textContent=state.fix.toFixed(1)+"%";render()};
+$("#vc").oninput=e=>{state.vc=+e.target.value;$("#vVar").textContent=(state.vc>=0?"+":"")+state.vc.toFixed(1)+" pp";render()};
+$$("#method button").forEach(b=>b.onclick=()=>{state.method=b.dataset.m;$$("#method button").forEach(x=>x.classList.toggle("on",x===b));render()});
+$$("#tabs button").forEach(b=>b.onclick=()=>{state.tab=b.dataset.t;$$("#tabs button").forEach(x=>x.classList.toggle("on",x===b));$$(".panel").forEach(p=>p.classList.toggle("on",p.id==="p-"+state.tab));render()});
+$("#theme").onclick=()=>{const r=document.documentElement,dark=(r.getAttribute("data-theme")||(matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light"))==="dark";r.setAttribute("data-theme",dark?"light":"dark");render()};
+matchMedia("(prefers-color-scheme: dark)").addEventListener("change",render);
+render();
+</script>
+</body>
+</html>
